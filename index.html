@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login System</h1>
+        
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2>Login</h2>
+            <div class="form-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="Your Email" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Your Password" required>
+            </div>
+            <div class="form-group">
+                <button type="button" onclick="login()">Login</button>
+            </div>
+        </div>
+
+        <!-- Logout Button -->
+        <div id="logout" style="display: none;">
+            <h2>Logout</h2>
+            <div class="form-group">
+                <button type="button" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = 'http://localhost:3000/api';
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch(`${apiUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('accessToken', result.accessToken);
+                    localStorage.setItem('refreshToken', result.refreshToken);
+                    document.getElementById('logout').style.display = 'block';
+                    alert('Logged in successfully');
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        }
+
+        async function logout() {
+            const accessToken = localStorage.getItem('accessToken');
+
+            try {
+                const response = await fetch(`${apiUrl}/auth/logout`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                if (response.ok) {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    document.getElementById('logout').style.display = 'none';
+                    alert('Logged out successfully');
+                } else {
+                    alert('Logout failed');
+                }
+            } catch (error) {
+                alert('Logout failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
